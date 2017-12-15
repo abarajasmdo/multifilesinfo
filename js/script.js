@@ -95,7 +95,7 @@ scriptApp.controller('scriptController',function($scope,$http){
     indexval=a["Torque"].indexOf(aa["Seating Torque"]);
     aa["Seating Torque Angle"] = a["Angle 1"][indexval];
     // Get Variables **** Installation Torque
-    torquebyeachangle=simplifyData(a["Angle 1"],a["Torque"].slice(0,indexval));
+    torquebyeachangle=simplifyData(a["Angle 1"].slice(0,indexval),a["Torque"].slice(0,indexval));
     indexval=lastSlopeChange(slopeAnalysis(torquebyeachangle),torquebyeachangle);
     limit1=a["Angle 1"].indexOf(indexval);
     angles.Installation=["BEGIN",a["Angle 1"][limit1]];
@@ -271,20 +271,6 @@ scriptApp.controller('scriptController',function($scope,$http){
           updatedval=val;
       }
       return updatedval
-  };
-
-  $scope.change = function () {
-    if ($scope.plotval==0) {
-      index=getIndexSeating($scope.cycleval);
-      $scope.tableData[$scope.seating[index]["Title"]]["Seating Angles"]["Installation"][1]=$scope.selected[1];
-    } else {
-      index=getIndexUnseating($scope.cycleval);
-      $scope.tableData[$scope.unseating[index]["Title"]]["Unseating Angles"]["Breakaway"][0]=$scope.selected[1];
-    }
-    $scope.switchCycle($scope.cycleval);
-
-    // **** NOT DOING RIGHT AWAY.... HAD A DELAY
-
   };
 
   $scope.getFolderDir = function(idLabel) {
@@ -522,8 +508,8 @@ scriptApp.controller('scriptController',function($scope,$http){
         color: '#333333',
         shape: 'squarepin',
         data: [{
-          x: $scope.tableData[$scope.seating[index]["Title"]]["Breakaway Torque"][0],
-          y: $scope.tableData[$scope.seating[index]["Title"]]["Breakaway Torque"][2],
+          x: $scope.tableData[$scope.unseating[index]["Title"]]["Breakaway Torque"][0],
+          y: $scope.tableData[$scope.unseating[index]["Title"]]["Breakaway Torque"][2],
           text: 'Highcharts Cloud Beta', title: 'Breakaway Torque', shape: 'squarepin'
         }],
         showInLegend: false
@@ -542,8 +528,8 @@ scriptApp.controller('scriptController',function($scope,$http){
         color: '#333333',
         shape: 'squarepin',
         data: [{
-          x: $scope.tableData[$scope.seating[index]["Title"]]["Removal Torque"][0],
-          y: $scope.tableData[$scope.seating[index]["Title"]]["Removal Torque"][2],
+          x: $scope.tableData[$scope.unseating[index]["Title"]]["Removal Torque"][0],
+          y: $scope.tableData[$scope.unseating[index]["Title"]]["Removal Torque"][2],
           text: 'Highcharts Cloud Beta', title: 'Removal Torque', shape: 'squarepin'
         }],
         showInLegend: false
@@ -562,8 +548,8 @@ scriptApp.controller('scriptController',function($scope,$http){
         color: '#333333',
         shape: 'squarepin',
         data: [{
-          x: $scope.tableData[$scope.seating[index]["Title"]]["Prevailing Torque"][0],
-          y: $scope.tableData[$scope.seating[index]["Title"]]["Prevailing Torque"][2],
+          x: $scope.tableData[$scope.unseating[index]["Title"]]["Prevailing Torque"][0],
+          y: $scope.tableData[$scope.unseating[index]["Title"]]["Prevailing Torque"][2],
           text: 'Highcharts Cloud Beta', title: 'Prevailing Torque', shape: 'squarepin'
         }],
         showInLegend: false
@@ -574,8 +560,8 @@ scriptApp.controller('scriptController',function($scope,$http){
         color: '#333333',
         shape: 'squarepin',
         data: [{
-          x: $scope.tableData[$scope.seating[index]["Title"]]["Unseating Torque"][0],
-          y: $scope.tableData[$scope.seating[index]["Title"]]["Unseating Torque"][2],
+          x: $scope.tableData[$scope.unseating[index]["Title"]]["Unseating Torque"][0],
+          y: $scope.tableData[$scope.unseating[index]["Title"]]["Unseating Torque"][2],
           text: 'Highcharts Cloud Beta', title: 'Unseating Torque', shape: 'squarepin'
         }],
         showInLegend: false
