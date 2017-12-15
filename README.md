@@ -15,7 +15,7 @@ Learn more about Electron and its API in the [documentation](http://electron.ato
 1. Deploy Application, locate yourself where you want to have the folder complete:
 
 ```bash
- electron-packager ../multifilesinfo analysistool --platform=win32 --arch=x64
+ electron-packager ../r-tat r-tat --platform=win32 --arch=x64
 ```
 
 2. Copy the end directory called: `your-app-name`-win32-x64

@@ -16,6 +16,7 @@
   <script src="./bower_components/angular/angular.js" charset="utf-8"></script>
   <script src="./bower_components/file-saverjs/FileSaver.js" charset="utf-8"></script>
   <script src="./bower_components/tableexport.js/dist/js/tableexport.js" charset="utf-8"></script>
+  <script src='./bower_components/angular-upload/angular-upload.min.js'></script>
   <!-- Start App JS -->
   <script src="./js/script.js" charset="utf-8"></script>
 </head>
@@ -56,7 +57,7 @@
           </p>
           <p><b>Created by:</b> Antonio Barajas</p>
           <p><b>Date:</b> December 15th, 2017</p>
-          <p><b>Version:</b> v1.0.1</p>
+          <p><b>Version:</b> v1.0.2</p>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
@@ -65,30 +66,32 @@
     </div>
   </div>
   <div class="container-fluid" id="individualNut">
-    <div class="row">
+    <div class="row" id="inputs">
       <div class="col-md-12 col-sm-12">
-        <h4>Select Files:</h4>
-        <div class="input-group" id="browseFiles" ng-controller="showBrowseFile">
-          <input type="file" id="hiddenUploadBtn" required accept=".txt"  style="display:none" multiple onchange="angular.element(this).scope().addMultFiles(this)">
-          <input type="text" id="disabledPathName" required disabled="disabled" placeholder="File not selected" class="form-control">
-          <span class="input-group-btn">
-            <button id="actualUploadBtn" type="button" class="btn btn-default browseButton">Browse</button>
-          </span>
+        <div class="panel panel-default">
+          <div class="panel-heading">Inputs</div>
+          <div class="panel-body">
+            <div class="input-group" id="browseFiles">
+              <span class="input-group-addon">Select Files:</span>
+              <input type="text" id="disabledPathName" required disabled="disabled" placeholder="File not selected" class="form-control">
+              <span class="input-group-btn">
+                <button id="actualUploadBtn" type="button" class="btn btn-default browseButton" ng-click="getFiles()">Browse</button>
+              </span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
     <div class="row" id="buttons">
       <div class="col-md-12 col-sm-12">
-        <h4><br></h4>
-        <div class="input-group">
-          <button type="button" class="btn btn-primary" onclick="angular.element(this).scope().genTable(0)">Nut Summary</button>
-          <button type="button" class="btn btn-primary" onclick="angular.element(this).scope().genTable(1)">Nut Full Information</button>
-          <button type="button" class="btn btn-primary" onclick="angular.element(this).scope().genChart(0)">Seating Plots</button>
-          <button type="button" class="btn btn-primary" onclick="angular.element(this).scope().genChart(1)">Unseating Plots</button>
-          <button type="button" class="btn btn-primary" onclick="angular.element(this).scope().genPlot(0)">Seating Detail</button>
-          <button type="button" class="btn btn-primary" onclick="angular.element(this).scope().genPlot(1)">Unseating Detail</button>
-        </div>
-        <h4><br></h4>
+        <ul class="nav nav-tabs nav-justified">
+          <li role="presentation"><a href="#" ng-click="genTable(0)">Nut Summary</a></li>
+          <li role="presentation"><a href="#" ng-click="genTable(1)">Nut Full Information</a></li>
+          <li role="presentation"><a href="#" ng-click="genChart(0)">Seating Plots</a></li>
+          <li role="presentation"><a href="#" ng-click="genChart(1)">Unseating Plots</a></li>
+          <li role="presentation"><a href="#" ng-click="genPlot(0)">Seating Detail</a></li>
+          <li role="presentation"><a href="#" ng-click="genPlot(1)">Unseating Detail</a></li>
+        </ul>
       </div>
     </div>
     <div class="row" id="graphic0"></div>
@@ -101,62 +104,66 @@
     </div>
     <div id="graphic1"></div>
     <div class="row" id="table1">
-      <table class="table">
-        <tr>
-          <th>Cycle</th>
-          <th>Installation [lb-in]</th>
-          <th>Breakaway [lb-in]</th>
-          <th>Removal [lb-in]</th>
-        </tr>
-        <tr ng-repeat="cycle in keysData">
-          <td>{{cycle}}</td>
-          <td>{{roundData(tableData[cycle]["Installation Torque"][1])}}</td>
-          <td>{{roundData(tableData[cycle]["Breakaway Torque"][1])}}</td>
-          <td>{{roundData(tableData[cycle]["Removal Torque"][1])}}</td>
-        </tr>
-      </table>
+      <div class="col-sm-12">
+        <table class="table">
+          <tr>
+            <th>Cycle</th>
+            <th>Installation [lb-in]</th>
+            <th>Breakaway [lb-in]</th>
+            <th>Removal [lb-in]</th>
+          </tr>
+          <tr ng-repeat="cycle in keysData">
+            <td>{{cycle}}</td>
+            <td>{{roundData(tableData[cycle]["Installation Torque"][1])}}</td>
+            <td>{{roundData(tableData[cycle]["Breakaway Torque"][1])}}</td>
+            <td>{{roundData(tableData[cycle]["Removal Torque"][1])}}</td>
+          </tr>
+        </table>
+      </div>
     </div>
     <div class="row" id="table2">
-      <table class="table">
-        <tr>
-          <th rowspan="2">Cycle</th>
-          <th colspan="2">Installation</th>
-          <th colspan="2">Seating</th>
-          <th colspan="2">Unseating</th>
-          <th colspan="2">Breakaway</th>
-          <th colspan="2">Prevailing</th>
-          <th colspan="2">Removal</th>
-        </tr>
-        <tr>
-          <th>Angle [°]</th>
-          <th>Torque [lb-in]</th>
-          <th>Angle [°]</th>
-          <th>Torque [lb-in]</th>
-          <th>Angle [°]</th>
-          <th>Torque [lb-in]</th>
-          <th>Angle [°]</th>
-          <th>Torque [lb-in]</th>
-          <th>Angle [°]</th>
-          <th>Torque [lb-in]</th>
-          <th>Angle [°]</th>
-          <th>Torque [lb-in]</th>
-        </tr>
-        <tr ng-repeat="cycle in keysData">
-          <td>{{cycle}}</td>
-          <td>{{tableData[cycle]["Installation Torque"][0]}}</td>
-          <td>{{roundData(tableData[cycle]["Installation Torque"][1])}}</td>
-          <td>{{tableData[cycle]["Seating Torque"][0]}}</td>
-          <td>{{roundData(tableData[cycle]["Seating Torque"][1])}}</td>
-          <td>{{tableData[cycle]["Unseating Torque"][0]}}</td>
-          <td>{{roundData(tableData[cycle]["Unseating Torque"][1])}}</td>
-          <td>{{tableData[cycle]["Breakaway Torque"][0]}}</td>
-          <td>{{roundData(tableData[cycle]["Breakaway Torque"][1])}}</td>
-          <td>{{tableData[cycle]["Prevailing Torque"][0]}}</td>
-          <td>{{roundData(tableData[cycle]["Prevailing Torque"][1])}}</td>
-          <td>{{tableData[cycle]["Removal Torque"][0]}}</td>
-          <td>{{roundData(tableData[cycle]["Removal Torque"][1])}}</td>
-        </tr>
-      </table>
+      <div class="col-sm-12">
+        <table class="table">
+          <tr>
+            <th rowspan="2">Cycle</th>
+            <th colspan="2">Installation</th>
+            <th colspan="2">Seating</th>
+            <th colspan="2">Unseating</th>
+            <th colspan="2">Breakaway</th>
+            <th colspan="2">Prevailing</th>
+            <th colspan="2">Removal</th>
+          </tr>
+          <tr>
+            <th>Angle [°]</th>
+            <th>Torque [lb-in]</th>
+            <th>Angle [°]</th>
+            <th>Torque [lb-in]</th>
+            <th>Angle [°]</th>
+            <th>Torque [lb-in]</th>
+            <th>Angle [°]</th>
+            <th>Torque [lb-in]</th>
+            <th>Angle [°]</th>
+            <th>Torque [lb-in]</th>
+            <th>Angle [°]</th>
+            <th>Torque [lb-in]</th>
+          </tr>
+          <tr ng-repeat="cycle in keysData">
+            <td>{{cycle}}</td>
+            <td>{{tableData[cycle]["Installation Torque"][0]}}</td>
+            <td>{{roundData(tableData[cycle]["Installation Torque"][1])}}</td>
+            <td>{{tableData[cycle]["Seating Torque"][0]}}</td>
+            <td>{{roundData(tableData[cycle]["Seating Torque"][1])}}</td>
+            <td>{{tableData[cycle]["Unseating Torque"][0]}}</td>
+            <td>{{roundData(tableData[cycle]["Unseating Torque"][1])}}</td>
+            <td>{{tableData[cycle]["Breakaway Torque"][0]}}</td>
+            <td>{{roundData(tableData[cycle]["Breakaway Torque"][1])}}</td>
+            <td>{{tableData[cycle]["Prevailing Torque"][0]}}</td>
+            <td>{{roundData(tableData[cycle]["Prevailing Torque"][1])}}</td>
+            <td>{{tableData[cycle]["Removal Torque"][0]}}</td>
+            <td>{{roundData(tableData[cycle]["Removal Torque"][1])}}</td>
+          </tr>
+        </table>
+      </div>
     </div>
   </div>
 </body>

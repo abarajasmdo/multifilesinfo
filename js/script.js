@@ -1,15 +1,8 @@
-var scriptApp = angular.module('scriptApp',[]);
-
-scriptApp.controller("showBrowseFile",[function(){
-  function initCtrl() {
-    document.getElementById('actualUploadBtn').addEventListener('click', function() {
-      document.getElementById('hiddenUploadBtn').click();
-    });
-  };
-  initCtrl();
-}]);
+var scriptApp = angular.module('scriptApp',['lr.upload']);
 
 scriptApp.controller('scriptController',function($scope,$http){
+
+  const fs = require('fs');
 
   function initCtrl() {
     $('#graphic0').hide();
@@ -35,11 +28,17 @@ scriptApp.controller('scriptController',function($scope,$http){
     $scope.labels=[];
   };
 
-  var openSpinner = function () {
+  function openSpinner() {
 
   };
 
-  var closeModal = function() {
+  function closeModal() {
+
+  };
+
+  function getPathFromText(texto) {
+    a=texto.split('\\');
+    return texto.replace(a[a.length-1],'');
   };
 
   function getUnseatingValues(a) {
@@ -292,87 +291,98 @@ scriptApp.controller('scriptController',function($scope,$http){
   };
 
   $scope.readAddFile = function(file) {
-    var fileName = file.name;
+    var fileName = file;
+    $scope.fileNames.push(file);
     var fileMatrix = new Array();
     var transMatrix;
-    var reader = new FileReader();
-    var data = file;
     var genInfo = "";
     var doc="";
     var extras = {};
-    reader.onload = function(e){
-      $scope.$apply(function(){
-        var lines = reader.result.split(/[\r\n]+/g);
-        for(var line = 0; line < lines.length; line++){
-          if(line >= 2 && lines[line].length != 0){
-            var columns = lines[line].split(/[;]+/g);
-            if(line < 3){
-              genTitle = columns;
-            }else if(line < 4){
-              genUnits = columns;
-            }else {
-              for (i = 0; i < columns.length; i++){
-                columns[i] = Number(columns[i]);
-              }
-              fileMatrix.push(columns);
+    fs.readFile(file, 'utf-8', (err, data) => {
+      if(err){
+        alert("An error ocurred reading the file :" + err.message)
+        return
+      }
+      var lines = data.split(/[\r\n]+/g);
+      for(var line = 0; line < lines.length; line++){
+        if(line >= 2 && lines[line].length != 0){
+          var columns = lines[line].split(/[;]+/g);
+          if(line < 3){
+            genTitle = columns;
+          }else if(line < 4){
+            genUnits = columns;
+          }else {
+            for (i = 0; i < columns.length; i++){
+              columns[i] = Number(columns[i]);
             }
+            fileMatrix.push(columns);
           }
         }
-        transMatrix = transpose(fileMatrix);
-        fl = {};
-        fl ["File Info"] = file;
-        fl ["Data Titles"] = genTitle;
-        fl ["Units"] = genUnits;
-        fl ["fileName"] = fileName;
-        i = 0;
-        for (var title in genTitle) {
-          fl [genTitle[title]] = filterNaN(transMatrix[i]);
-          i = i + 1;
-        }
-        fl["Torque"] = fl["Torque1"].map(function(x) { return (x * 8.8507457673787); });
-        infofn=fileName.split("_");
-        filenum=Number(infofn[infofn.length-1].split(".")[0])
-        if (isOdd(filenum)) {
-          fl ["Title"] = "Cycle " + fixCycle((filenum + 1)/2);
-          //fl ["Analysis Summary"] = getSeatingValues(fl);
-          fl ["Chart Data"] = simplifyArray(fl["Angle 1"],fl["Torque"]);
-          $scope.seating.push(fl);
-          if (typeof $scope.tableData["Cycle " + fixCycle((filenum + 1)/2)] == "undefined") {
-            $scope.tableData["Cycle " + fixCycle((filenum + 1)/2)] = {};
-          };
-          $scope.tableData["Cycle " + fixCycle((filenum + 1)/2)] = extend($scope.tableData["Cycle " + fixCycle((filenum + 1)/2)],getSeatingValues(fl));
-        } else {
-          fl ["Title"] = "Cycle " + fixCycle((filenum)/2);
-          //fl ["Analysis Summary"] = getUnseatingValues(fl);
-          fl ["Chart Data"] = simplifyArray2(fl["Angle 1"],fl["Torque"]);
-          $scope.unseating.push(fl);
-          if (typeof $scope.tableData["Cycle " + fixCycle((filenum)/2)] == "undefined") {
-            $scope.tableData["Cycle " + fixCycle((filenum)/2)] = {};
-          };
-          $scope.tableData["Cycle " + fixCycle((filenum)/2)] = extend($scope.tableData["Cycle " + fixCycle((filenum)/2)],getUnseatingValues(fl));
-        }
-        $scope.infoFiles.push(fl);
-        $('#buttons').show();
-      });
-    };
-    reader.readAsText(data);
+      }
+      transMatrix = transpose(fileMatrix);
+      fl = {};
+      fl ["File Info"] = file;
+      fl ["Data Titles"] = genTitle;
+      fl ["Units"] = genUnits;
+      fl ["fileName"] = fileName;
+      i = 0;
+      for (var title in genTitle) {
+        fl [genTitle[title]] = filterNaN(transMatrix[i]);
+        i = i + 1;
+      }
+      fl["Torque"] = fl["Torque1"].map(function(x) { return (x * 8.8507457673787); });
+      infofn=fileName.split("_");
+      filenum=Number(infofn[infofn.length-1].split(".")[0])
+      if (isOdd(filenum)) {
+        fl ["Title"] = "Cycle " + fixCycle((filenum + 1)/2);
+        //fl ["Analysis Summary"] = getSeatingValues(fl);
+        fl ["Chart Data"] = simplifyArray(fl["Angle 1"],fl["Torque"]);
+        $scope.seating.push(fl);
+        if (typeof $scope.tableData["Cycle " + fixCycle((filenum + 1)/2)] == "undefined") {
+          $scope.tableData["Cycle " + fixCycle((filenum + 1)/2)] = {};
+        };
+        $scope.tableData["Cycle " + fixCycle((filenum + 1)/2)] = extend($scope.tableData["Cycle " + fixCycle((filenum + 1)/2)],getSeatingValues(fl));
+      } else {
+        fl ["Title"] = "Cycle " + fixCycle((filenum)/2);
+        //fl ["Analysis Summary"] = getUnseatingValues(fl);
+        fl ["Chart Data"] = simplifyArray2(fl["Angle 1"],fl["Torque"]);
+        $scope.unseating.push(fl);
+        if (typeof $scope.tableData["Cycle " + fixCycle((filenum)/2)] == "undefined") {
+          $scope.tableData["Cycle " + fixCycle((filenum)/2)] = {};
+        };
+        $scope.tableData["Cycle " + fixCycle((filenum)/2)] = extend($scope.tableData["Cycle " + fixCycle((filenum)/2)],getUnseatingValues(fl));
+      }
+      $scope.infoFiles.push(fl);
+    })
   };
 
   $scope.addMultFiles = function(files){
     initCtrl();
-    $scope.pathinfo = String(files.files[0].path.replace(files.files[0].name,''));
+    $scope.pathinfo = String(getPathFromText(files[0]));
     $('#disabledPathName').val($scope.pathinfo);
-    openSpinner();
     $scope.infoFiles = [];
     $scope.tableData = {};
     $scope.keysData = [];
     $scope.seating = [];
     $scope.unseating = [];
-    for(var i = 0; i < files.files.length; i++){
-      $scope.readAddFile(files.files[i]);
-      $scope.fileNames.push(files.files[i].name);
-    }
-    closeModal();
+    for(var i = 0; i < files.length; i++){
+      $scope.readAddFile(files[i]);
+    };
+  };
+
+  $scope.getFiles = function() {
+    openSpinner();
+    const {dialog} = require('electron').remote;
+    dialog.showOpenDialog({
+      properties: ['openFile','multiSelections']
+    },function(fileNames){
+      if(fileNames){
+        $scope.addMultFiles(fileNames);
+        $('#buttons').show();
+      }else {
+        console.log("No path selected");
+      }
+    });
   };
 
   $scope.genTable = function(val) {
@@ -382,7 +392,7 @@ scriptApp.controller('scriptController',function($scope,$http){
     $('#graphic1buttons').hide();
     $('#table1').hide();
     $('#table2').hide();
-    $scope.$apply();
+    //$scope.$apply();
     if (val == 0) {
       $('#table1').show();
     } else {
@@ -420,7 +430,7 @@ scriptApp.controller('scriptController',function($scope,$http){
         $scope.graphData[data].name = $scope.unseating[data]["Title"];
         $scope.graphData[data].data = $scope.unseating[data]["Chart Data"];
       };
-    }
+    };
     $scope.plotChart(0);
   };
 
@@ -434,7 +444,7 @@ scriptApp.controller('scriptController',function($scope,$http){
     $scope.plotval=val;
     $scope.switchCycle(0);
     $scope.plotChart(1);
-    $scope.$apply();
+    //$scope.$apply();
   };
 
   $scope.switchCycle = function (val) {
