@@ -1,0 +1,22 @@
+{
+  "name": "r-tat",
+  "description": "Reusability Test Analysis Tool build with Electron",
+  "main": "main.js",
+  "authors": [
+    "Antonio Barajas <abarajasmdo@gmail.com>"
+  ],
+  "license": "Apache 2.0",
+  "keywords": [
+    "Data Harvest",
+    "File",
+    "Electron"
+  ],
+  "homepage": "https://github.com/learn-digital-qro/file-storage-electron",
+  "dependencies": {
+    "angular": "^1.6.4",
+    "bootstrap": "^3.3.7",
+    "highcharts": "^6.0.3",
+    "tableexport.js": "^4.0.0",
+    "file-saverjs": "^1.3.6"
+  }
+}

@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Reusability Test Analysis Tool</title>
+  <!-- Start Style -->
+  <link rel="stylesheet" href="./bower_components/bootstrap/dist/css/bootstrap.css">
+  <link rel="stylesheet" href="./bower_components/bootstrap/dist/css/bootstrap-theme.css">
+  <!-- Start Bower JS Load -->
+  <script src="./bower_components/jquery/dist/jquery.js" charset="utf-8"></script>
+  <script>window.jQuery || document.write('<script src="./bower_components/jquery/dist/jquery.js"><\/script>')</script>
+  <script src="./bower_components/bootstrap/dist/js/bootstrap.js" charset="utf-8"></script>
+  <script src="./bower_components/highcharts/highcharts.js" type="text/javascript" charset="utf-8"></script>
+  <script src="./bower_components/highcharts/highstock.js" type="text/javascript" charset="utf-8"></script>
+  <script src="./bower_components/highcharts/modules/exporting.js" type="text/javascript" charset="utf-8"></script>
+  <script src="./bower_components/angular/angular.js" charset="utf-8"></script>
+  <script src="./bower_components/file-saverjs/FileSaver.js" charset="utf-8"></script>
+  <script src="./bower_components/tableexport.js/dist/js/tableexport.js" charset="utf-8"></script>
+  <!-- Start App JS -->
+  <script src="./js/script.js" charset="utf-8"></script>
+</head>
+<body ng-app="scriptApp" ng-controller="scriptController">
+  <nav class="navbar navbar-inverse">
+    <div class="container">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle collapsed" data.toggle="collapse" data-target="#navbar" aria-expand="false" aria-contols="navbar">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="#"><span>R-TAT</span></a>
+      </div>
+      <div id="navbar" class="navbar-collapse collapse">
+        <ul class="nav navbar-nav">
+          <li class="active"><a href="#">Home</a></li>
+          <li><a href="" data-toggle="modal" data-target="#aboutModal">About</a></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+  <div class="modal fade" id="aboutModal" tabindex="-1" role="dialog" aria-labelledby="aboutModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title" id="exampleModalLabel">About</h1>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <p><b>Reusability Test Analysis Tool</b></p>
+          <p>The tool review all points of interest on a nut reusability test (using an electronic torque wrench that measures angle and torque).  </p>
+          <p><b>Sponsored by:</b> Liliana Argueello
+
+          </p>
+          <p><b>Created by:</b> Antonio Barajas</p>
+          <p><b>Date:</b> December 15th, 2017</p>
+          <p><b>Version:</b> v1.0.0</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="container-fluid" id="individualNut">
+    <div class="row">
+      <div class="col-md-12 col-sm-12">
+        <h4>Select Files:</h4>
+        <div class="input-group" id="browseFiles" ng-controller="showBrowseFile">
+          <input type="file" id="hiddenUploadBtn" required accept=".txt"  style="display:none" multiple onchange="angular.element(this).scope().addMultFiles(this)">
+          <input type="text" id="disabledPathName" required disabled="disabled" placeholder="File not selected" class="form-control">
+          <span class="input-group-btn">
+            <button id="actualUploadBtn" type="button" class="btn btn-default browseButton">Browse</button>
+          </span>
+        </div>
+      </div>
+    </div>
+    <div class="row" id="buttons">
+      <div class="col-md-12 col-sm-12">
+        <h4><br></h4>
+        <div class="input-group">
+          <button type="button" class="btn btn-primary" onclick="angular.element(this).scope().genTable(0)">Nut Summary</button>
+          <button type="button" class="btn btn-primary" onclick="angular.element(this).scope().genTable(1)">Nut Full Information</button>
+          <button type="button" class="btn btn-primary" onclick="angular.element(this).scope().genChart(0)">Seating Plots</button>
+          <button type="button" class="btn btn-primary" onclick="angular.element(this).scope().genChart(1)">Unseating Plots</button>
+          <button type="button" class="btn btn-primary" onclick="angular.element(this).scope().genPlot(0)">Seating Detail</button>
+          <button type="button" class="btn btn-primary" onclick="angular.element(this).scope().genPlot(1)">Unseating Detail</button>
+        </div>
+        <h4><br></h4>
+      </div>
+    </div>
+    <div class="row" id="graphic0"></div>
+    <div class="row" id="graphic1buttons">
+      <div class="pagButton col-sm-12">
+        <ul class="pagination">
+          <li ng-repeat="cycle in keysData track by $index" id="cyclePlot{{$index}}"><a href="" ng-click="switchCycle($index)">{{cycle}}</a></li>
+        </ul>
+      </div>
+    </div>
+    <div id="graphic1"></div>
+    <div class="row" id="table1">
+      <table class="table">
+        <tr>
+          <th>Cycle</th>
+          <th>Installation [lb-in]</th>
+          <th>Breakaway [lb-in]</th>
+          <th>Removal [lb-in]</th>
+        </tr>
+        <tr ng-repeat="cycle in keysData">
+          <td>{{cycle}}</td>
+          <td>{{roundData(tableData[cycle]["Installation Torque"][1])}}</td>
+          <td>{{roundData(tableData[cycle]["Breakaway Torque"][1])}}</td>
+          <td>{{roundData(tableData[cycle]["Removal Torque"][1])}}</td>
+        </tr>
+      </table>
+    </div>
+    <div class="row" id="table2">
+      <table class="table">
+        <tr>
+          <th rowspan="2">Cycle</th>
+          <th colspan="2">Installation</th>
+          <th colspan="2">Seating</th>
+          <th colspan="2">Unseating</th>
+          <th colspan="2">Breakaway</th>
+          <th colspan="2">Prevailing</th>
+          <th colspan="2">Removal</th>
+        </tr>
+        <tr>
+          <th>Angle [°]</th>
+          <th>Torque [lb-in]</th>
+          <th>Angle [°]</th>
+          <th>Torque [lb-in]</th>
+          <th>Angle [°]</th>
+          <th>Torque [lb-in]</th>
+          <th>Angle [°]</th>
+          <th>Torque [lb-in]</th>
+          <th>Angle [°]</th>
+          <th>Torque [lb-in]</th>
+          <th>Angle [°]</th>
+          <th>Torque [lb-in]</th>
+        </tr>
+        <tr ng-repeat="cycle in keysData">
+          <td>{{cycle}}</td>
+          <td>{{tableData[cycle]["Installation Torque"][0]}}</td>
+          <td>{{roundData(tableData[cycle]["Installation Torque"][1])}}</td>
+          <td>{{tableData[cycle]["Seating Torque"][0]}}</td>
+          <td>{{roundData(tableData[cycle]["Seating Torque"][1])}}</td>
+          <td>{{tableData[cycle]["Unseating Torque"][0]}}</td>
+          <td>{{roundData(tableData[cycle]["Unseating Torque"][1])}}</td>
+          <td>{{tableData[cycle]["Breakaway Torque"][0]}}</td>
+          <td>{{roundData(tableData[cycle]["Breakaway Torque"][1])}}</td>
+          <td>{{tableData[cycle]["Prevailing Torque"][0]}}</td>
+          <td>{{roundData(tableData[cycle]["Prevailing Torque"][1])}}</td>
+          <td>{{tableData[cycle]["Removal Torque"][0]}}</td>
+          <td>{{roundData(tableData[cycle]["Removal Torque"][1])}}</td>
+        </tr>
+      </table>
+    </div>
+  </div>
+</body>
+</html>
