@@ -28,12 +28,19 @@ scriptApp.controller('scriptController',function($scope,$http){
     $scope.labels=[];
   };
 
-  function openSpinner() {
-
+  var openSpinner = function () {
+    $('#buttons').hide();
+    $('#loadingModal').modal({
+      backdrop: "static",
+      keyboard: false
+    });
   };
 
-  function closeModal() {
-
+  var closeSpinner = function() {
+    $(document).ready(function(){
+      $('#loadingModal').modal("hide");
+      $('#buttons').show();
+    });
   };
 
   function getPathFromText(texto) {
@@ -302,7 +309,7 @@ scriptApp.controller('scriptController',function($scope,$http){
       if(err){
         alert("An error ocurred reading the file :" + err.message)
         return
-      }
+      };
       var lines = data.split(/[\r\n]+/g);
       for(var line = 0; line < lines.length; line++){
         if(line >= 2 && lines[line].length != 0){
@@ -371,14 +378,14 @@ scriptApp.controller('scriptController',function($scope,$http){
   };
 
   $scope.getFiles = function() {
-    openSpinner();
     const {dialog} = require('electron').remote;
     dialog.showOpenDialog({
       properties: ['openFile','multiSelections']
     },function(fileNames){
       if(fileNames){
+        openSpinner();
         $scope.addMultFiles(fileNames);
-        $('#buttons').show();
+        closeSpinner();
       }else {
         console.log("No path selected");
       }
@@ -444,7 +451,6 @@ scriptApp.controller('scriptController',function($scope,$http){
     $scope.plotval=val;
     $scope.switchCycle(0);
     $scope.plotChart(1);
-    //$scope.$apply();
   };
 
   $scope.switchCycle = function (val) {

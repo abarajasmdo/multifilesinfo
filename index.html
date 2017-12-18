@@ -10,17 +10,20 @@
   <script src="./bower_components/jquery/dist/jquery.js" charset="utf-8"></script>
   <script>window.jQuery || document.write('<script src="./bower_components/jquery/dist/jquery.js"><\/script>')</script>
   <script src="./bower_components/bootstrap/dist/js/bootstrap.js" charset="utf-8"></script>
-  <script src="./bower_components/highcharts/highcharts.js" type="text/javascript" charset="utf-8"></script>
-  <script src="./bower_components/highcharts/highstock.js" type="text/javascript" charset="utf-8"></script>
-  <script src="./bower_components/highcharts/modules/exporting.js" type="text/javascript" charset="utf-8"></script>
+  <script src="./bower_components/highcharts/highcharts.js" charset="utf-8"></script>
+  <script src="./bower_components/highcharts/highstock.js" charset="utf-8"></script>
+  <script src="./bower_components/highcharts/modules/exporting.js" charset="utf-8"></script>
   <script src="./bower_components/angular/angular.js" charset="utf-8"></script>
   <script src="./bower_components/file-saverjs/FileSaver.js" charset="utf-8"></script>
   <script src="./bower_components/tableexport.js/dist/js/tableexport.js" charset="utf-8"></script>
-  <script src='./bower_components/angular-upload/angular-upload.min.js'></script>
+  <script src='./bower_components/angular-upload/angular-upload.min.js' charset="utf-8"></script>
   <!-- Start App JS -->
   <script src="./js/script.js" charset="utf-8"></script>
 </head>
 <body ng-app="scriptApp" ng-controller="scriptController">
+  <div id="loadingModal" class="modal fade">
+    <div id="spinner" class="spinner" rel="spinner"></div>
+  </div>
   <nav class="navbar navbar-inverse">
     <div class="container">
       <div class="navbar-header">
@@ -57,7 +60,7 @@
           </p>
           <p><b>Created by:</b> Antonio Barajas</p>
           <p><b>Date:</b> December 15th, 2017</p>
-          <p><b>Version:</b> v1.0.2</p>
+          <p><b>Version:</b> v1.0.3</p>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
