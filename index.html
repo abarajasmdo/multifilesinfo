@@ -21,9 +21,6 @@
   <script src="./js/script.js" charset="utf-8"></script>
 </head>
 <body ng-app="scriptApp" ng-controller="scriptController">
-  <div id="loadingModal" class="modal fade">
-    <div id="spinner" class="spinner" rel="spinner"></div>
-  </div>
   <nav class="navbar navbar-inverse">
     <div class="container">
       <div class="navbar-header">
@@ -43,11 +40,12 @@
       </div>
     </div>
   </nav>
+  <div class="modal fade" id="loadingModal"></div>
   <div class="modal fade" id="aboutModal" tabindex="-1" role="dialog" aria-labelledby="aboutModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header">
-          <h1 class="modal-title" id="exampleModalLabel">About</h1>
+          <h1 class="modal-title">About</h1>
           <button type="button" class="close" data-dismiss="modal" aria-label="Close">
             <span aria-hidden="true">&times;</span>
           </button>
@@ -65,6 +63,25 @@
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
         </div>
+      </div>
+    </div>
+  </div>
+  <div class="container-fluid" id="nutList">
+    <div class="row">
+      <div class="col-sm-12">
+        <ul class="nav nav-pills">
+          <li class="dropdown">
+            <a class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false" href="#">Project <span class="caret"></span></a>
+            <ul class="dropdown-menu">
+              <li><a href="#" ng-click="newProject()">New</a></li>
+              <li><a href="#" ng-click="loadProject()">Load</a></li>
+              <li><a href="#" ng-click="saveAsProject()">Save As...</a></li>
+              <li role="separator" class="divider"></li>
+              <li><a href="#" ng-click="sumProject()">Project Summary</a></li>
+            </ul>
+          </li>
+          <li ng-repeat="nut in project track by $index"><a href="#" ng-click="switchNut(nut)">{{nut.nutid}}</a></li>
+        </ul>
       </div>
     </div>
   </div>

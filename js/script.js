@@ -36,10 +36,25 @@ scriptApp.controller('scriptController',function($scope,$http){
     });
   };
 
+  var addInfoToProject  = function () {
+    folders=$scope.pathinfo.split("\\");
+    id=folders[folders.length-2];
+    $scope.project[id] = {};
+    $scope.project[id].nutid = id;
+    $scope.project[id].pathinfo = $scope.pathinfo;
+    $scope.project[id].tableData = $scope.tableData;
+    $scope.project[id].seating = $scope.seating;
+    $scope.project[id].unseating = $scope.unseating;
+  };
+
   var closeSpinner = function() {
     $(document).ready(function(){
       $('#loadingModal').modal("hide");
       $('#buttons').show();
+    });
+    $(document).ready(function(){
+      $scope.saveProject();
+      $scope.$apply();
     });
   };
 
@@ -279,24 +294,6 @@ scriptApp.controller('scriptController',function($scope,$http){
       return updatedval
   };
 
-  $scope.getFolderDir = function(idLabel) {
-    const {dialog} = require('electron').remote;
-    dialog.showOpenDialog({
-      properties: ['openDirectory']
-    },function(path){
-      if(path){
-        if (idLabel==1) {
-          $scope.sourceFolder=path[0];
-        } else if (idLabel==2) {
-          $scope.targetFolder=path[0];
-        }
-        $scope.$apply();
-      }else {
-        console.log("No path selected");
-      }
-    });
-  };
-
   $scope.readAddFile = function(file) {
     var fileName = file;
     $scope.fileNames.push(file);
@@ -387,7 +384,7 @@ scriptApp.controller('scriptController',function($scope,$http){
         $scope.addMultFiles(fileNames);
         closeSpinner();
       }else {
-        console.log("No path selected");
+        console.log("No files selected");
       }
     });
   };
@@ -622,6 +619,56 @@ scriptApp.controller('scriptController',function($scope,$http){
     });
   };
 
-  initCtrl();
+  $scope.newProject = function () {
+    $scope.project={};
+    $('#disabledPathName').val("");
+    initCtrl();
+  };
+
+  $scope.loadProject = function () {
+    
+  };
+
+  $scope.saveProject = function () {
+    addInfoToProject();
+  };
+
+  $scope.saveAsProject = function () {
+    $scope.saveProject();
+    var json = JSON.stringify($scope.project);
+    const {dialog} = require('electron').remote;
+    dialog.showSaveDialog({
+      defaultPath:"rtat-project",
+      filters: [
+        {name: 'Object', extensions: ['json']},
+        {name: 'All Files', extensions: ['*']}
+      ]
+    },function(fileName){
+      if(fileName){
+        fs.writeFile(fileName, json, 'utf8', (err) => {
+          if (err) throw err;
+          console.log('The file has been saved!');
+        });
+      }else {
+        console.log("No file selected");
+      }
+    });
+  };
+
+  $scope.sumProject = function () {
+
+  };
+
+  $scope.switchNut = function (nut) {
+    initCtrl();
+    closeSpinner();
+    $('#disabledPathName').val(nut.pathinfo);
+    $scope.pathinfo = nut.pathinfo;
+    $scope.tableData = nut.tableData;
+    $scope.seating = nut.seating;
+    $scope.unseating = nut.unseating;
+  };
+
+  $scope.newProject();
 
 });
