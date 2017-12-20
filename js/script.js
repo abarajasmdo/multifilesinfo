@@ -1,5 +1,17 @@
 var scriptApp = angular.module('scriptApp',['lr.upload']);
 
+scriptApp.filter('isEmpty', function () {
+        var bar;
+        return function (obj) {
+            for (bar in obj) {
+                if (obj.hasOwnProperty(bar)) {
+                    return false;
+                }
+            }
+            return true;
+        };
+    });
+
 scriptApp.controller('scriptController',function($scope,$http){
 
   const fs = require('fs');
@@ -15,6 +27,7 @@ scriptApp.controller('scriptController',function($scope,$http){
     $scope.fileNames = [];
     $scope.infoFiles = [];
     $scope.pathinfo = "";
+    $scope.projectName ='';
 
     $scope.seating = [];
     $scope.unseating = [];
@@ -28,7 +41,7 @@ scriptApp.controller('scriptController',function($scope,$http){
     $scope.labels=[];
   };
 
-  var openSpinner = function () {
+  function openSpinner() {
     $('#buttons').hide();
     $('#loadingModal').modal({
       backdrop: "static",
@@ -36,9 +49,10 @@ scriptApp.controller('scriptController',function($scope,$http){
     });
   };
 
-  var addInfoToProject  = function () {
+  function addInfoToProject() {
     folders=$scope.pathinfo.split("\\");
     id=folders[folders.length-2];
+    $scope.projectName=folders[folders.length-3];
     $scope.project[id] = {};
     $scope.project[id].nutid = id;
     $scope.project[id].pathinfo = $scope.pathinfo;
@@ -47,7 +61,7 @@ scriptApp.controller('scriptController',function($scope,$http){
     $scope.project[id].unseating = $scope.unseating;
   };
 
-  var closeSpinner = function() {
+  function closeSpinner() {
     $(document).ready(function(){
       $('#loadingModal').modal("hide");
       $('#buttons').show();
@@ -325,15 +339,12 @@ scriptApp.controller('scriptController',function($scope,$http){
       }
       transMatrix = transpose(fileMatrix);
       fl = {};
-      fl ["File Info"] = file;
-      fl ["Data Titles"] = genTitle;
-      fl ["Units"] = genUnits;
-      fl ["fileName"] = fileName;
+      fl ["fileName"] = fileName.replace($scope.pathinfo,"");
       i = 0;
       for (var title in genTitle) {
         fl [genTitle[title]] = filterNaN(transMatrix[i]);
         i = i + 1;
-      }
+      };
       fl["Torque"] = fl["Torque1"].map(function(x) { return (x * 8.8507457673787); });
       infofn=fileName.split("_");
       filenum=Number(infofn[infofn.length-1].split(".")[0])
@@ -356,6 +367,9 @@ scriptApp.controller('scriptController',function($scope,$http){
         };
         $scope.tableData["Cycle " + fixCycle((filenum)/2)] = extend($scope.tableData["Cycle " + fixCycle((filenum)/2)],getUnseatingValues(fl));
       }
+      delete fl["Time"];
+      delete fl["RPM1"];
+      delete fl["Torque1"];
       $scope.infoFiles.push(fl);
     })
   };
@@ -377,7 +391,11 @@ scriptApp.controller('scriptController',function($scope,$http){
   $scope.getFiles = function() {
     const {dialog} = require('electron').remote;
     dialog.showOpenDialog({
-      properties: ['openFile','multiSelections']
+      properties: ['openFile','multiSelections'],
+      filters: [
+        {name: 'Text File', extensions: ['txt']},
+        {name: 'All Files', extensions: ['*']}
+      ]
     },function(fileNames){
       if(fileNames){
         openSpinner();
@@ -396,6 +414,8 @@ scriptApp.controller('scriptController',function($scope,$http){
     $('#graphic1buttons').hide();
     $('#table1').hide();
     $('#table2').hide();
+    $('#genTable' + String(val)).addClass('active');
+    $('#genTable' + String(val)).siblings().removeClass('active');
     //$scope.$apply();
     if (val == 0) {
       $('#table1').show();
@@ -411,6 +431,8 @@ scriptApp.controller('scriptController',function($scope,$http){
 
   $scope.genChart = function (val) {
     $('#graphic0').show();
+    $('#genChart' + val).addClass('active');
+    $('#genChart' + val).siblings().removeClass('active');
     $('#graphic1').hide();
     $('#graphic1buttons').hide();
     $('#table1').hide();
@@ -442,12 +464,50 @@ scriptApp.controller('scriptController',function($scope,$http){
     $scope.keysData=Object.keys($scope.tableData).sort();
     $('#graphic1').show();
     $('#graphic1buttons').show();
+    $('#genPlot' + String(val)).addClass('active');
+    $('#genPlot' + String(val)).siblings().removeClass('active');
     $('#graphic0').hide();
     $('#table1').hide();
     $('#table2').hide();
     $scope.plotval=val;
     $scope.switchCycle(0);
     $scope.plotChart(1);
+  };
+
+  $scope.plotChart = function (val) {
+    $('#graphic'+String(val)).highcharts({
+      chart: {
+        animation:false,
+        zoomType:'x'
+      },
+      title: {
+        text: $scope.graphTitle
+      },
+      subtitle: {
+        text: 'Source: ' + $scope.pathinfo
+      },
+      xAxis: {
+        title: {
+          text: 'Degree'
+        },
+        plotBands: $scope.plotBand,
+      },
+      yAxis: {
+        title: {
+          text: 'Lb-in'
+        },
+      },
+      legend: {
+        enabled:$scope.legendEnabled
+      },
+      tooltip: {
+        headerFormat: '<b>{series.name}</b><br>',
+        pointFormat: 'Angle: {point.x:.2f} °<br>Torque: {point.y:.2f} lb-in<br>',
+        shared: false,
+        useHTML: true
+      },
+      series: $scope.graphData,
+    });
   };
 
   $scope.switchCycle = function (val) {
@@ -583,42 +643,6 @@ scriptApp.controller('scriptController',function($scope,$http){
     $scope.plotChart(1);
   };
 
-  $scope.plotChart = function (val) {
-    $('#graphic'+String(val)).highcharts({
-      chart: {
-        animation:false,
-        zoomType:'x'
-      },
-      title: {
-        text: $scope.graphTitle
-      },
-      subtitle: {
-        text: 'Source: ' + $scope.pathinfo
-      },
-      xAxis: {
-        title: {
-          text: 'Degree'
-        },
-        plotBands: $scope.plotBand,
-      },
-      yAxis: {
-        title: {
-          text: 'Lb-in'
-        },
-      },
-      legend: {
-        enabled:$scope.legendEnabled
-      },
-      tooltip: {
-        headerFormat: '<b>{series.name}</b><br>',
-        pointFormat: 'Angle: {point.x:.2f} °<br>Torque: {point.y:.2f} lb-in<br>',
-        shared: false,
-        useHTML: true
-      },
-      series: $scope.graphData,
-    });
-  };
-
   $scope.newProject = function () {
     $scope.project={};
     $('#disabledPathName').val("");
@@ -626,11 +650,40 @@ scriptApp.controller('scriptController',function($scope,$http){
   };
 
   $scope.loadProject = function () {
-    
+    initCtrl();
+    openSpinner();
+    const {dialog} = require('electron').remote;
+    dialog.showOpenDialog({
+      properties: ['openFile'],
+      filters: [
+        {name: 'Object', extensions: ['json']},
+        {name: 'All Files', extensions: ['*']}
+      ]
+    },function(fileName){
+      if(fileName){
+        fs.readFile(fileName[0], 'utf-8', (err, data) => {
+          if(err){
+            alert("An error ocurred reading the file :" + err.message)
+            return
+          };
+          $scope.project = JSON.parse(data);
+          closeSpinner();
+        });
+      } else {
+        console.log("No file selected");
+        $('#loadingModal').modal("hide");
+      };
+    });
   };
 
   $scope.saveProject = function () {
-    addInfoToProject();
+    if ($scope.pathinfo == "") {
+      keysLabel=[];
+      keysLabel=Object.keys($scope.project);
+      $scope.switchNut($scope.project[keysLabel[0]],0);
+    } else {
+      addInfoToProject();
+    };
   };
 
   $scope.saveAsProject = function () {
@@ -638,7 +691,7 @@ scriptApp.controller('scriptController',function($scope,$http){
     var json = JSON.stringify($scope.project);
     const {dialog} = require('electron').remote;
     dialog.showSaveDialog({
-      defaultPath:"rtat-project",
+      defaultPath:$scope.projectName.replace(" ","_"),
       filters: [
         {name: 'Object', extensions: ['json']},
         {name: 'All Files', extensions: ['*']}
@@ -656,12 +709,14 @@ scriptApp.controller('scriptController',function($scope,$http){
   };
 
   $scope.sumProject = function () {
-
+    console.log($scope.project);
   };
 
-  $scope.switchNut = function (nut) {
+  $scope.switchNut = function (nut,index) {
     initCtrl();
     closeSpinner();
+    $('#nutButton' + index).addClass('active');
+    $('#nutButton' + index).siblings().removeClass('active');
     $('#disabledPathName').val(nut.pathinfo);
     $scope.pathinfo = nut.pathinfo;
     $scope.tableData = nut.tableData;

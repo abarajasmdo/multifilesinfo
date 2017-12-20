@@ -34,7 +34,16 @@
       </div>
       <div id="navbar" class="navbar-collapse collapse">
         <ul class="nav navbar-nav">
-          <li class="active"><a href="#">Home</a></li>
+          <li class="dropdown active">
+            <a class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false" href="#">Project Menu <span class="caret"></span></a>
+            <ul class="dropdown-menu">
+              <li><a href="#" ng-click="newProject()">New</a></li>
+              <li><a href="#" ng-click="loadProject()">Load</a></li>
+              <li><a href="#" ng-click="saveAsProject()">Save As...</a></li>
+              <li role="separator" class="divider"></li>
+              <li><a href="#" ng-click="sumProject()">Project Summary</a></li>
+            </ul>
+          </li>
           <li><a href="" data-toggle="modal" data-target="#aboutModal">About</a></li>
         </ul>
       </div>
@@ -67,26 +76,18 @@
     </div>
   </div>
   <div class="container-fluid" id="nutList">
+    <div class="alert alert-info" role="alert" ng-show="projectName != ''">Project Name: <b>{{projectName}}</b></div>
     <div class="row">
       <div class="col-sm-12">
-        <ul class="nav nav-pills">
-          <li class="dropdown">
-            <a class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false" href="#">Project <span class="caret"></span></a>
-            <ul class="dropdown-menu">
-              <li><a href="#" ng-click="newProject()">New</a></li>
-              <li><a href="#" ng-click="loadProject()">Load</a></li>
-              <li><a href="#" ng-click="saveAsProject()">Save As...</a></li>
-              <li role="separator" class="divider"></li>
-              <li><a href="#" ng-click="sumProject()">Project Summary</a></li>
-            </ul>
-          </li>
-          <li ng-repeat="nut in project track by $index"><a href="#" ng-click="switchNut(nut)">{{nut.nutid}}</a></li>
+        <ul class="nav nav-tabs">
+          <li ng-repeat="nut in project track by $index" id="nutButton{{$index}}"><a href="#" ng-click="switchNut(nut,$index)">{{nut.nutid}}</a></li>
+          <li><a href="#" ng-hide="project | isEmpty" ng-click="getFiles()"><i><b><small>Add</small></b></i></a></li>
         </ul>
       </div>
     </div>
   </div>
   <div class="container-fluid" id="individualNut">
-    <div class="row" id="inputs">
+    <div class="row" id="inputs" ng-hide="pathinfo">
       <div class="col-md-12 col-sm-12">
         <div class="panel panel-default">
           <div class="panel-heading">Inputs</div>
@@ -105,12 +106,12 @@
     <div class="row" id="buttons">
       <div class="col-md-12 col-sm-12">
         <ul class="nav nav-tabs nav-justified">
-          <li role="presentation"><a href="#" ng-click="genTable(0)">Nut Summary</a></li>
-          <li role="presentation"><a href="#" ng-click="genTable(1)">Nut Full Information</a></li>
-          <li role="presentation"><a href="#" ng-click="genChart(0)">Seating Plots</a></li>
-          <li role="presentation"><a href="#" ng-click="genChart(1)">Unseating Plots</a></li>
-          <li role="presentation"><a href="#" ng-click="genPlot(0)">Seating Detail</a></li>
-          <li role="presentation"><a href="#" ng-click="genPlot(1)">Unseating Detail</a></li>
+          <li role="presentation" id="genTable0"><a href="#" ng-click="genTable(0)">Nut Summary</a></li>
+          <li role="presentation" id="genTable1"><a href="#" ng-click="genTable(1)">Nut Full Information</a></li>
+          <li role="presentation" id="genChart0"><a href="#" ng-click="genChart(0)">Seating Plots</a></li>
+          <li role="presentation" id="genChart1"><a href="#" ng-click="genChart(1)">Unseating Plots</a></li>
+          <li role="presentation" id="genPlot0"><a href="#" ng-click="genPlot(0)">Seating Detail</a></li>
+          <li role="presentation" id="genPlot1"><a href="#" ng-click="genPlot(1)">Unseating Detail</a></li>
         </ul>
       </div>
     </div>
