@@ -42,6 +42,7 @@
               <li><a href="#" ng-click="saveAsProject()">Save As...</a></li>
               <li role="separator" class="divider"></li>
               <li><a href="#" ng-click="sumProject()">Project Summary</a></li>
+              <li><a href="#" ng-click="indProject()">Project Detail</a></li>
             </ul>
           </li>
           <li><a href="" data-toggle="modal" data-target="#aboutModal">About</a></li>
@@ -66,8 +67,8 @@
 
           </p>
           <p><b>Created by:</b> Antonio Barajas</p>
-          <p><b>Date:</b> December 15th, 2017</p>
-          <p><b>Version:</b> v1.0.3</p>
+          <p><b>Date:</b> March 20th, 2018</p>
+          <p><b>Version:</b> v1.0.4</p>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
@@ -75,18 +76,16 @@
       </div>
     </div>
   </div>
-  <div class="container-fluid" id="nutList">
-    <div class="alert alert-info" role="alert" ng-show="projectName != ''">Project Name: <b>{{projectName}}</b></div>
+  <div class="alert alert-info" role="alert" ng-show="projectName != ''">Project Name: <b>{{projectName}}</b></div>
+  <div class="container-fluid" id="individualNut">
     <div class="row">
       <div class="col-sm-12">
         <ul class="nav nav-tabs">
-          <li ng-repeat="nut in project track by $index" id="nutButton{{$index}}"><a href="#" ng-click="switchNut(nut,$index)">{{nut.nutid}}</a></li>
+          <li ng-repeat="nut in project track by $index" id="nutButton{{$index}}"><a href="" ng-click="switchNut(nut,$index)">{{nut.nutid}}</a></li>
           <li><a href="#" ng-hide="project | isEmpty" ng-click="getFiles()"><i><b><small>Add</small></b></i></a></li>
         </ul>
       </div>
     </div>
-  </div>
-  <div class="container-fluid" id="individualNut">
     <div class="row" id="inputs" ng-hide="pathinfo">
       <div class="col-md-12 col-sm-12">
         <div class="panel panel-default">
@@ -106,12 +105,12 @@
     <div class="row" id="buttons">
       <div class="col-md-12 col-sm-12">
         <ul class="nav nav-tabs nav-justified">
-          <li role="presentation" id="genTable0"><a href="#" ng-click="genTable(0)">Nut Summary</a></li>
-          <li role="presentation" id="genTable1"><a href="#" ng-click="genTable(1)">Nut Full Information</a></li>
-          <li role="presentation" id="genChart0"><a href="#" ng-click="genChart(0)">Seating Plots</a></li>
-          <li role="presentation" id="genChart1"><a href="#" ng-click="genChart(1)">Unseating Plots</a></li>
-          <li role="presentation" id="genPlot0"><a href="#" ng-click="genPlot(0)">Seating Detail</a></li>
-          <li role="presentation" id="genPlot1"><a href="#" ng-click="genPlot(1)">Unseating Detail</a></li>
+          <li id="genTable0"><a href="#" ng-click="genTable(0)">Nut Summary</a></li>
+          <li id="genTable1"><a href="#" ng-click="genTable(1)">Nut Full Information</a></li>
+          <li id="genChart0"><a href="#" ng-click="genChart(0)">Seating Plots</a></li>
+          <li id="genChart1"><a href="#" ng-click="genChart(1)">Unseating Plots</a></li>
+          <li id="genPlot0"><a href="#" ng-click="genPlot(0)">Seating Detail</a></li>
+          <li id="genPlot1"><a href="#" ng-click="genPlot(1)">Unseating Detail</a></li>
         </ul>
       </div>
     </div>
@@ -126,65 +125,114 @@
     <div id="graphic1"></div>
     <div class="row" id="table1">
       <div class="col-sm-12">
-        <table class="table">
-          <tr>
-            <th>Cycle</th>
-            <th>Installation [lb-in]</th>
-            <th>Breakaway [lb-in]</th>
-            <th>Removal [lb-in]</th>
-          </tr>
-          <tr ng-repeat="cycle in keysData">
-            <td>{{cycle}}</td>
-            <td>{{roundData(tableData[cycle]["Installation Torque"][1])}}</td>
-            <td>{{roundData(tableData[cycle]["Breakaway Torque"][1])}}</td>
-            <td>{{roundData(tableData[cycle]["Removal Torque"][1])}}</td>
-          </tr>
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <th>Cycle</th>
+              <th>Installation [lb-in]</th>
+              <th>Breakaway [lb-in]</th>
+              <th>Removal [lb-in]</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr ng-repeat="cycle in keysData">
+              <td>{{cycle}}</td>
+              <td>{{roundData(tableData[cycle]["Installation Torque"][1])}}</td>
+              <td>{{roundData(tableData[cycle]["Breakaway Torque"][1])}}</td>
+              <td>{{roundData(tableData[cycle]["Removal Torque"][1])}}</td>
+            </tr>
+          </tbody>
         </table>
       </div>
     </div>
     <div class="row" id="table2">
       <div class="col-sm-12">
-        <table class="table">
-          <tr>
-            <th rowspan="2">Cycle</th>
-            <th colspan="2">Installation</th>
-            <th colspan="2">Seating</th>
-            <th colspan="2">Unseating</th>
-            <th colspan="2">Breakaway</th>
-            <th colspan="2">Prevailing</th>
-            <th colspan="2">Removal</th>
-          </tr>
-          <tr>
-            <th>Angle [°]</th>
-            <th>Torque [lb-in]</th>
-            <th>Angle [°]</th>
-            <th>Torque [lb-in]</th>
-            <th>Angle [°]</th>
-            <th>Torque [lb-in]</th>
-            <th>Angle [°]</th>
-            <th>Torque [lb-in]</th>
-            <th>Angle [°]</th>
-            <th>Torque [lb-in]</th>
-            <th>Angle [°]</th>
-            <th>Torque [lb-in]</th>
-          </tr>
-          <tr ng-repeat="cycle in keysData">
-            <td>{{cycle}}</td>
-            <td>{{tableData[cycle]["Installation Torque"][0]}}</td>
-            <td>{{roundData(tableData[cycle]["Installation Torque"][1])}}</td>
-            <td>{{tableData[cycle]["Seating Torque"][0]}}</td>
-            <td>{{roundData(tableData[cycle]["Seating Torque"][1])}}</td>
-            <td>{{tableData[cycle]["Unseating Torque"][0]}}</td>
-            <td>{{roundData(tableData[cycle]["Unseating Torque"][1])}}</td>
-            <td>{{tableData[cycle]["Breakaway Torque"][0]}}</td>
-            <td>{{roundData(tableData[cycle]["Breakaway Torque"][1])}}</td>
-            <td>{{tableData[cycle]["Prevailing Torque"][0]}}</td>
-            <td>{{roundData(tableData[cycle]["Prevailing Torque"][1])}}</td>
-            <td>{{tableData[cycle]["Removal Torque"][0]}}</td>
-            <td>{{roundData(tableData[cycle]["Removal Torque"][1])}}</td>
-          </tr>
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <th rowspan="2">Cycle</th>
+              <th colspan="2">Installation</th>
+              <th colspan="2">Seating</th>
+              <th colspan="2">Unseating</th>
+              <th colspan="2">Breakaway</th>
+              <th colspan="2">Prevailing</th>
+              <th colspan="2">Removal</th>
+            </tr>
+            <tr>
+              <th>Angle [°]</th>
+              <th>Torque [lb-in]</th>
+              <th>Angle [°]</th>
+              <th>Torque [lb-in]</th>
+              <th>Angle [°]</th>
+              <th>Torque [lb-in]</th>
+              <th>Angle [°]</th>
+              <th>Torque [lb-in]</th>
+              <th>Angle [°]</th>
+              <th>Torque [lb-in]</th>
+              <th>Angle [°]</th>
+              <th>Torque [lb-in]</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr ng-repeat="cycle in keysData">
+              <td>{{cycle}}</td>
+              <td>{{tableData[cycle]["Installation Torque"][0]}}</td>
+              <td>{{roundData(tableData[cycle]["Installation Torque"][1])}}</td>
+              <td>{{tableData[cycle]["Seating Torque"][0]}}</td>
+              <td>{{roundData(tableData[cycle]["Seating Torque"][1])}}</td>
+              <td>{{tableData[cycle]["Unseating Torque"][0]}}</td>
+              <td>{{roundData(tableData[cycle]["Unseating Torque"][1])}}</td>
+              <td>{{tableData[cycle]["Breakaway Torque"][0]}}</td>
+              <td>{{roundData(tableData[cycle]["Breakaway Torque"][1])}}</td>
+              <td>{{tableData[cycle]["Prevailing Torque"][0]}}</td>
+              <td>{{roundData(tableData[cycle]["Prevailing Torque"][1])}}</td>
+              <td>{{tableData[cycle]["Removal Torque"][0]}}</td>
+              <td>{{roundData(tableData[cycle]["Removal Torque"][1])}}</td>
+            </tr>
+          </tbody>
         </table>
       </div>
+    </div>
+  </div>
+  <div class="container-fluid" id="summaryNuts">
+    <div class="row" id="sumButtons">
+      <div class="col-md-12 col-sm-12">
+        <ul class="nav nav-tabs nav-justified">
+          <li id="genSumTable"><a href="#" ng-click="genSumTable()">Test Summary</a></li>
+          <li id="genSumPlot"><a href="#" ng-click="genSumPlot()">Detail Plots</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="pagButton col-sm-12" id="infoButtons">
+      <ul class="pagination">
+        <li id="installationTable"><a href="" ng-click="switchSumPlotData('Installation Torque','installationTable')">Installation</a></li>
+        <li id="breakawayTable"><a href="" ng-click="switchSumPlotData('Breakaway Torque','breakawayTable')">Breakaway</a></li>
+        <li id="removalTable"><a href="" ng-click="switchSumPlotData('Removal Torque','removalTable')">Removal</a></li>
+      </ul>
+    </div>
+    <div class="row" id="tableSummary">
+      <div class="col-sm-12">
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <th colspan="{{colSpanVal}}">{{idName}} [lb-in]</th>
+            </tr>
+            <tr>
+              <th>Nut</th>
+              <th ng-repeat="cycle in keysData">{{cycle}}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr ng-repeat="(nut, info) in project">
+              <td>{{nut}}</td>
+              <td colspan="1" ng-repeat="cycle in keysData">{{roundData(info.tableData[cycle][idName][1])}}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="row">
+      <div id="graphic2"></div>
     </div>
   </div>
 </body>

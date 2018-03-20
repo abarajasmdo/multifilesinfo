@@ -23,6 +23,9 @@ scriptApp.controller('scriptController',function($scope,$http){
     $('#buttons').hide();
     $('#table1').hide();
     $('#table2').hide();
+    $('#summaryNuts').hide();
+
+    $scope.indProject();
 
     $scope.fileNames = [];
     $scope.infoFiles = [];
@@ -38,6 +41,7 @@ scriptApp.controller('scriptController',function($scope,$http){
 
     $scope.graphTitle="";
     $scope.graphData = [];
+    $scope.plotCategories = null;
     $scope.labels=[];
   };
 
@@ -134,8 +138,8 @@ scriptApp.controller('scriptController',function($scope,$http){
     indexval=lastSlopeChange(slopeAnalysis(torquebyeachangle),torquebyeachangle);
     limit1=a["Angle 1"].indexOf(indexval);
     angles.Installation=["BEGIN",a["Angle 1"][limit1]];
-    torquetoreduce=a["Torque"].slice(0,limit1 - 1);
-    angletoreduce=a["Angle 1"].slice(0,limit1 - 1);
+    torquetoreduce=a["Torque"].slice(0,limit1 - 20);
+    angletoreduce=a["Angle 1"].slice(0,limit1 - 20);
     aa["Installation Torque"] = Math.max.apply(Math,torquetoreduce);
     indexval=torquetoreduce.indexOf(aa["Installation Torque"]);
     aa["Installation Torque Angle"] = angletoreduce[indexval];
@@ -299,6 +303,14 @@ scriptApp.controller('scriptController',function($scope,$http){
 
   function sumArrayVals(array){ return (array.reduce(function(a,b) { return a + b;}));};
 
+  function tableButtons() {
+    $("table").tableExport(), {
+      bootstrap: true,
+      formats: ['xls', 'csv', 'txt'],
+    };
+    $("table").tableExport().reset();
+  };
+
   $scope.roundData = function(val) {
       if (isNumber(val)) {
           updatedval=(Math.round(val*1000000)/1000000).toFixed(2);
@@ -422,11 +434,7 @@ scriptApp.controller('scriptController',function($scope,$http){
     } else {
       $('#table2').show();
     };
-    $("table").tableExport(), {
-      bootstrap: true,
-      formats: ['xls', 'csv', 'txt'],
-    };
-    $("table").tableExport().reset();
+    tableButtons();
   };
 
   $scope.genChart = function (val) {
@@ -441,6 +449,7 @@ scriptApp.controller('scriptController',function($scope,$http){
     $scope.plotBand=[];
     $scope.labels=[];
     $scope.graphTitle="";
+    $scope.tooltipText="Angle: {point.x:.2f} °";
     $scope.legendEnabled=true;
     if (val==0) {
       $scope.graphTitle="Seating Information";
@@ -464,13 +473,15 @@ scriptApp.controller('scriptController',function($scope,$http){
     $scope.keysData=Object.keys($scope.tableData).sort();
     $('#graphic1').show();
     $('#graphic1buttons').show();
-    $('#genPlot' + String(val)).addClass('active');
     $('#genPlot' + String(val)).siblings().removeClass('active');
+    $('#genPlot' + String(val)).addClass('active');
     $('#graphic0').hide();
     $('#table1').hide();
     $('#table2').hide();
     $scope.plotval=val;
     $scope.switchCycle(0);
+    $('#cyclePlot' + String(0)).siblings().removeClass('active');
+    $('#cyclePlot' + String(0)).addClass('active');
     $scope.plotChart(1);
   };
 
@@ -488,9 +499,10 @@ scriptApp.controller('scriptController',function($scope,$http){
       },
       xAxis: {
         title: {
-          text: 'Degree'
+          text: $scope.plotxTitle
         },
         plotBands: $scope.plotBand,
+        categories: $scope.plotCategories
       },
       yAxis: {
         title: {
@@ -502,7 +514,7 @@ scriptApp.controller('scriptController',function($scope,$http){
       },
       tooltip: {
         headerFormat: '<b>{series.name}</b><br>',
-        pointFormat: 'Angle: {point.x:.2f} °<br>Torque: {point.y:.2f} lb-in<br>',
+        pointFormat: $scope.tooltipText + '<br>Torque: {point.y:.2f} lb-in<br>',
         shared: false,
         useHTML: true
       },
@@ -517,6 +529,8 @@ scriptApp.controller('scriptController',function($scope,$http){
     $scope.graphTitle="";
     $scope.editButton="";
     $scope.cycleval=val;
+    $scope.tooltipText="Angle: {point.x:.2f} °";
+    $scope.plotxTitle="Angle [°]";
     if ($scope.plotval==0) {
       $scope.editButton="Edit Installation Area";
       index=getIndexSeating(val);
@@ -641,6 +655,8 @@ scriptApp.controller('scriptController',function($scope,$http){
       };
     };
     $scope.plotChart(1);
+    $('#cyclePlot' + String(val)).siblings().removeClass('active');
+    $('#cyclePlot' + String(val)).addClass('active');
   };
 
   $scope.newProject = function () {
@@ -668,6 +684,7 @@ scriptApp.controller('scriptController',function($scope,$http){
           };
           $scope.project = JSON.parse(data);
           closeSpinner();
+          $scope.$apply();
         });
       } else {
         console.log("No file selected");
@@ -708,20 +725,107 @@ scriptApp.controller('scriptController',function($scope,$http){
     });
   };
 
-  $scope.sumProject = function () {
-    console.log($scope.project);
-  };
-
   $scope.switchNut = function (nut,index) {
     initCtrl();
     closeSpinner();
-    $('#nutButton' + index).addClass('active');
-    $('#nutButton' + index).siblings().removeClass('active');
+    $('#genTable0').siblings().removeClass('active');
+    $('#genTable0').addClass('active');
+    $('#nutButton'+index).siblings().removeClass('active');
+    $('#nutButton'+index).addClass('active');
     $('#disabledPathName').val(nut.pathinfo);
     $scope.pathinfo = nut.pathinfo;
     $scope.tableData = nut.tableData;
     $scope.seating = nut.seating;
     $scope.unseating = nut.unseating;
+    $scope.keysData=Object.keys($scope.tableData).sort();
+    $scope.totalColumns=[];
+    for (var i = 0; i < $scope.keysData.length; i++) {
+      $scope.totalColumns.push("Installation\n[lb-in]");
+      $scope.totalColumns.push("Breakaway\n[lb-in]");
+      $scope.totalColumns.push("Removal\n[lb-in]");
+    };
+    $scope.genTable(0);
+  };
+
+  $scope.sumProject = function () {
+    if ($scope.projectName == '') {
+      alert("Not able to open this function.\n\nPlease add files or open a projet first.")
+    } else {
+      $scope.idName='Installation Torque';
+      $scope.colSpanVal=$scope.keysData.length + 1;
+      tableButtons();
+      $scope.genSumPlotData();
+      $('#individualNut').hide();
+      $('#summaryNuts').show();
+      $('#tableSummary').hide();
+      $('#infoButtons').hide();
+      $('#installationTable').siblings().removeClass('active');
+      $('#installationTable').addClass('active');
+      $scope.genSumTable();
+    }
+  };
+
+  $scope.indProject = function () {
+    $('#individualNut').show();
+    $('#summaryNuts').hide();
+  };
+
+  $scope.genSumTable = function () {
+    $('#tableSummary').show();
+    $('#infoButtons').show();
+    $('#graphic2').hide();
+    $('#genSumTable').siblings().removeClass('active');
+    $('#genSumTable').addClass('active');
+  };
+
+  $scope.activeClass = function (idName) {
+    $('#' + idName).addClass('active');
+    $('#' + idName).siblings().removeClass('active');
+  };
+
+  $scope.genSumPlot = function () {
+    $('#genSumPlot').siblings().removeClass('active');
+    $('#genSumPlot').addClass('active');
+    $('#graphic2').siblings().hide();
+    $('#graphic2').show();
+    $('#summaryNuts').show();
+    $('#tableSummary').hide();
+    $('#infoButtons').show();
+    $scope.genSumPlotData();
+    $scope.plotChart(2);
+  };
+
+  $scope.switchSumPlotData = function (idName,idTitle) {
+    $scope.idName=idName;
+    $('#'+idTitle).siblings().removeClass('active');
+    $('#'+idTitle).addClass('active');
+    $scope.genSumPlotData();
+    $scope.plotChart(2);
+  };
+
+  $scope.genSumPlotData = function () {
+    $scope.graphData=[];
+    $scope.plotxTitle="Cycles";
+    foldersNames=$scope.pathinfo.split("\\");
+    lastFolderName=foldersNames[foldersNames.length - 2];
+    $scope.pathinfo=$scope.pathinfo.replace(lastFolderName+"\\","");
+    $scope.graphTitle=$scope.idName;
+    $scope.tooltipText="Cycle: {point.x:.0f}";
+    $scope.legendEnabled=true;
+    $scope.plotCategories=[];
+    for (var i = 0; i < $scope.keysData.length; i++) {
+      $scope.plotCategories.push($scope.keysData[i]);
+    };
+    nutInfo=[];
+    nutInfo=Object.keys($scope.project);
+    for (var i = 0; i < nutInfo.length; i++) {
+      $scope.graphData[i]={};
+      $scope.graphData[i].name = nutInfo[i];
+      $scope.graphData[i].data=[];
+      for (var j = 0; j < $scope.keysData.length; j++) {
+        $scope.graphData[i].data.push($scope.project[nutInfo[i]].tableData[$scope.keysData[j]][$scope.idName][1]);
+      };
+    };
   };
 
   $scope.newProject();
