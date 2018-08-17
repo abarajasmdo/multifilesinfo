@@ -8,7 +8,7 @@ This is a minimal Electron application based on the [Quick Start Guide](http://e
 
 Learn more about Electron and its API in the [documentation](http://electron.atom.io/docs/latest).
 
-#### License [CC0 (Public Domain)](LICENSE.md)
+#### License [GNU General Public License v3.0](LICENSE)
 
 ## Deployment Method
 
