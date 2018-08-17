@@ -90,8 +90,8 @@ scriptApp.controller('scriptController',function($scope,$http){
     aa["Unseating Torque Angle"] = a["Angle 1"][indexval];
     aa["Unseating Torque"] = Math.abs(aa["Unseating Torque Raw"]);
     // Get Variables **** Breakaway Torque
-    torquebyeachangle=simplifyData2(a["Angle 1"].slice(indexval),a["Torque"].slice(indexval));
-    limit1=a["Angle 1"].indexOf(Number(a["Angle 1"][indexval])+firstSlopeChange(slopeAnalysis(torquebyeachangle),torquebyeachangle));
+    torquebyeachangle=simplifyData(a["Angle 1"].slice(indexval),a["Torque"].slice(indexval),"min");
+    limit1=a["Angle 1"].indexOf(Number(a["Angle 1"][indexval])+firstSlopeChange(slopeAnalysis(torquebyeachangle,0.5),torquebyeachangle));
     limit2=a["Angle 1"].indexOf(Number(a["Angle 1"][limit1])+90);
     angles.Breakaway=[a["Angle 1"][limit1],a["Angle 1"][limit2]];
     torquetoreduce=a["Torque"].slice(limit1,limit2);
@@ -135,7 +135,7 @@ scriptApp.controller('scriptController',function($scope,$http){
     aa["Seating Torque Angle"] = a["Angle 1"][indexval];
     // Get Variables **** Installation Torque
     torquebyeachangle=simplifyData(a["Angle 1"].slice(0,indexval),a["Torque"].slice(0,indexval));
-    indexval=lastSlopeChange(slopeAnalysis(torquebyeachangle),torquebyeachangle);
+    indexval=lastSlopeChange(slopeAnalysis(torquebyeachangle,0.5),torquebyeachangle);
     limit1=a["Angle 1"].indexOf(indexval);
     angles.Installation=["BEGIN",a["Angle 1"][limit1]];
     torquetoreduce=a["Torque"].slice(0,limit1 - 20);
@@ -184,6 +184,22 @@ scriptApp.controller('scriptController',function($scope,$http){
     return !(isNaN(value));
   };
 
+  function movavg(a) {
+    b=[];
+    for (var i = 1; i < a.length; i++) {
+      b.push((a[i]+a[i-1])/2);
+    }
+    return b;
+  };
+
+  function quartile(a,p) {
+    a.sort((a, b) => a - b);
+    lowMiddle = Math.floor((a.length - 1) * p);
+    highMiddle = Math.ceil((a.length - 1) * p);
+    console.log(a[lowMiddle], a[highMiddle]);
+    return ((a[lowMiddle] + a[highMiddle]) / 2);
+  }
+
   function fixCycle(value) {
     if (value < 10) {
       return "0" + String(value);
@@ -204,46 +220,44 @@ scriptApp.controller('scriptController',function($scope,$http){
     return lineData;
   };
 
-  function simplifyData(x_data,y_data){
+  function simplifyData(x_data,y_data,func){
+    if (func == undefined) { func = "max" };
     var lineData = [];
+    var infoToAnalyze = [];
     max_x = Math.ceil(Math.max.apply(Math,x_data));
     for (var i=1; i < max_x; i++){
-      lineData.push(Math.max.apply(Math,y_data.slice(x_data.indexOf(i-1),x_data.indexOf(i))));
+      infoToAnalyze=y_data.slice(x_data.indexOf(i-1),x_data.indexOf(i));
+      if (infoToAnalyze.length > 0) {
+        if (func == "max") {
+          lineData.push(Math.max.apply(Math,infoToAnalyze));
+        } else {
+          lineData.push(Math.min.apply(Math,infoToAnalyze));
+        }
+      } else {
+        lineData.push();
+      }
     }
     return lineData;
   };
 
-  function simplifyData2(x_data,y_data){
+  function simplifyArray(x_data,y_data,func){
+    if (func == undefined) { func = "max" };
     var lineData = [];
     max_x = Math.ceil(Math.max.apply(Math,x_data));
     for (var i=1; i < max_x; i++){
-      lineData.push(Math.min.apply(Math,y_data.slice(x_data.indexOf(i-1),x_data.indexOf(i))));
+      if (func == "max") {
+        lineData.push([i,Math.max.apply(Math,y_data.slice(x_data.indexOf(i-1),x_data.indexOf(i)))]);
+      } else {
+        lineData.push([i,Math.min.apply(Math,y_data.slice(x_data.indexOf(i-1),x_data.indexOf(i)))]);
+      }
     }
     return lineData;
   };
 
-  function simplifyArray(x_data,y_data){
-    var lineData = [];
-    max_x = Math.ceil(Math.max.apply(Math,x_data));
-    for (var i=1; i < max_x; i++){
-      lineData.push([i,Math.max.apply(Math,y_data.slice(x_data.indexOf(i-1),x_data.indexOf(i)))]);
-    }
-    return lineData;
-  };
-
-  function simplifyArray2(x_data,y_data){
-    var lineData = [];
-    max_x = Math.ceil(Math.max.apply(Math,x_data));
-    for (var i=1; i < max_x; i++){
-      lineData.push([i,Math.min.apply(Math,y_data.slice(x_data.indexOf(i-1),x_data.indexOf(i)))]);
-    }
-    return lineData;
-  };
-
-  function slopeAnalysis(x_data){
+  function slopeAnalysis(x_data,slopeRange){
     var lineData = [];
     for (var i=1; i < x_data.length; i++){
-      if (x_data[i] > (x_data[i-1] - 0.5) && x_data[i] < (x_data[i-1] + 0.5)) {
+      if (x_data[i] > (x_data[i-1] - (slopeRange / 2)) && x_data[i] < (x_data[i-1] + (slopeRange / 2))) {
         lineData.push(0);
       } else if (x_data[i] > x_data[i-1]) {
         lineData.push(1);
@@ -265,13 +279,14 @@ scriptApp.controller('scriptController',function($scope,$http){
   };
 
   function lastSlopeChange(x_data,y_data){
-    var maxDelta = Math.max.apply(Math,y_data)*0.01;
+    var maxValue = Math.max.apply(Math,y_data);
+    var maxDelta = maxValue*0.01;
     var lastIndex = [];
     var indexData = x_data.length-1;
     for (var i=1; i < x_data.length; i++){
       if (x_data[i] == 1 && x_data[i-1] == -1 ) {
         lastIndex.push([y_data[i-1],i-1]);
-        if (lastIndex.length > 1 && (lastIndex[lastIndex.length-1][1] - lastIndex[lastIndex.length-2][1]) < maxDelta) {
+        if (lastIndex.length > 1 && lastIndex[lastIndex.length-1][0] < maxValue && (lastIndex[lastIndex.length-1][0] - lastIndex[lastIndex.length-2][0]) < maxDelta) {
           indexData = i-1;
         }
       };
@@ -333,7 +348,7 @@ scriptApp.controller('scriptController',function($scope,$http){
         alert("An error ocurred reading the file :" + err.message)
         return
       };
-      var lines = data.split(/[\r\n]+/g);
+      var lines = data.replace("Torque;","Torque1;").split(/[\r\n]+/g);
       for(var line = 0; line < lines.length; line++){
         if(line >= 2 && lines[line].length != 0){
           var columns = lines[line].split(/[;]+/g);
@@ -372,7 +387,7 @@ scriptApp.controller('scriptController',function($scope,$http){
       } else {
         fl ["Title"] = "Cycle " + fixCycle((filenum)/2);
         //fl ["Analysis Summary"] = getUnseatingValues(fl);
-        fl ["Chart Data"] = simplifyArray2(fl["Angle 1"],fl["Torque"]);
+        fl ["Chart Data"] = simplifyArray(fl["Angle 1"],fl["Torque"],"min");
         $scope.unseating.push(fl);
         if (typeof $scope.tableData["Cycle " + fixCycle((filenum)/2)] == "undefined") {
           $scope.tableData["Cycle " + fixCycle((filenum)/2)] = {};
