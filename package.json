@@ -1,6 +1,6 @@
 {
   "name": "r-tat",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Reusability Test Analysis Tool build with Electron",
   "main": "main.js",
   "scripts": {
